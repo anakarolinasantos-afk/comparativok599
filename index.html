@@ -2,449 +2,196 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comparativo Aprovado × Realizado</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estudo inicial x Lotes 1 + 2 - K599 Fujimoto</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0d0d0f;
-    --surface: #16161a;
-    --surface2: #1e1e24;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --text: #f0ede8;
-    --muted: #7a7880;
-    --muted2: #a09da8;
-    --approve: #4e9cf5;
-    --approve-dim: rgba(78,156,245,0.12);
-    --real: #f0a04b;
-    --real-dim: rgba(240,160,75,0.12);
-    --green: #56d18c;
-    --green-dim: rgba(86,209,140,0.12);
-    --red: #f26262;
-    --red-dim: rgba(242,98,98,0.12);
-    --accent: #c9b8ff;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    padding: 48px 32px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  /* HEADER */
-  .header {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: start;
-    gap: 24px;
-    margin-bottom: 48px;
-    padding-bottom: 32px;
-    border-bottom: 1px solid var(--border2);
-    position: relative;
-  }
-  .header::after {
-    content: '';
-    position: absolute;
-    bottom: -1px; left: 0;
-    width: 80px; height: 2px;
-    background: var(--accent);
-  }
-  .header-eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .header-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(28px, 4vw, 42px);
-    font-weight: 400;
-    line-height: 1.1;
-    color: var(--text);
-  }
-  .header-title em {
-    font-style: italic;
-    color: var(--accent);
-  }
-  .header-badge {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 12px;
-    padding: 12px 20px;
-    text-align: right;
-    white-space: nowrap;
-  }
-  .header-badge-label { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; font-family: 'DM Mono', monospace; }
-  .header-badge-val { font-family: 'DM Mono', monospace; font-size: 22px; color: var(--red); margin-top: 4px; }
-
-  /* KPI CARDS */
-  .kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 40px;
-  }
-  .kpi {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px 24px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s;
-    animation: fadeUp 0.5s ease both;
-  }
-  .kpi:hover { border-color: var(--border2); }
-  .kpi::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-  }
-  .kpi.blue::before { background: var(--approve); }
-  .kpi.orange::before { background: var(--real); }
-  .kpi.red::before { background: var(--red); }
-  .kpi.green::before { background: var(--green); }
-  .kpi-label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: 10px; }
-  .kpi-val { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; }
-  .kpi.blue .kpi-val { color: var(--approve); }
-  .kpi.orange .kpi-val { color: var(--real); }
-  .kpi.red .kpi-val { color: var(--red); }
-  .kpi.green .kpi-val { color: var(--green); }
-  .kpi-sub { font-size: 12px; color: var(--muted2); margin-top: 6px; }
-
-  /* TABS */
-  .tabs { display: flex; gap: 4px; margin-bottom: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; width: fit-content; }
-  .tab { padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-  .tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
-
-  /* TABLE */
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 32px; animation: fadeUp 0.5s 0.1s ease both; }
-  .table-head { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 0; padding: 14px 24px; background: var(--surface2); border-bottom: 1px solid var(--border); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-family: 'DM Mono', monospace; }
-  .table-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 0; padding: 16px 24px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.15s; cursor: default; }
-  .table-row:last-child { border-bottom: none; }
-  .table-row:hover { background: rgba(255,255,255,0.03); }
-  .table-row .cat { font-size: 14px; font-weight: 600; }
-  .table-row .val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted2); text-align: right; }
-  .table-row .val.real { color: var(--text); }
-  .badge { display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; padding: 3px 8px; border-radius: 6px; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
-  .badge.up { background: var(--red-dim); color: var(--red); }
-  .badge.down { background: var(--green-dim); color: var(--green); }
-  .bar-wrap { grid-column: 1 / -1; height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
-
-  /* CHARTS GRID */
-  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px; }
-  @media (max-width: 680px) { .charts-grid { grid-template-columns: 1fr; } }
-  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; animation: fadeUp 0.5s 0.2s ease both; }
-  .chart-card.full { grid-column: 1 / -1; }
-  .chart-title { font-size: 13px; font-weight: 600; color: var(--muted2); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 20px; font-family: 'DM Mono', monospace; }
-
-  /* UNIT SECTION */
-  .unit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px; }
-  @media (max-width: 680px) { .unit-grid { grid-template-columns: 1fr; } }
-  .unit-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 8px; }
-  .unit-card-label { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'DM Mono', monospace; }
-  .unit-card-val { font-family: 'DM Serif Display', serif; font-size: 36px; }
-  .unit-card.blue .unit-card-val { color: var(--approve); }
-  .unit-card.orange .unit-card-val { color: var(--real); }
-  .unit-card-sub { font-size: 12px; color: var(--muted2); }
-  .unit-diff { background: var(--red-dim); border: 1px solid rgba(242,98,98,0.2); border-radius: 16px; padding: 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-  .unit-diff-label { font-size: 12px; color: var(--muted2); font-family: 'DM Mono', monospace; }
-  .unit-diff-val { font-family: 'DM Serif Display', serif; font-size: 48px; color: var(--red); }
-
-  /* SECTION */
-  .section { display: none; }
-  .section.active { display: block; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* LEGEND */
-  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted2); font-family: 'DM Mono', monospace; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
-
-  /* TOOLTIP custom */
-  .tooltip-box { position: fixed; background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 10px 14px; font-size: 12px; pointer-events: none; display: none; z-index: 100; font-family: 'DM Mono', monospace; color: var(--text); }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f5f5f0;--surface:#fff;--surface2:#f0f0eb;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.13);--text:#1a1a1a;--muted:#888;--muted2:#555;--blue:#2563eb;--blue-bg:#eff4ff;--blue-border:rgba(37,99,235,.25);--orange:#ea580c;--orange-bg:#fff7ed;--orange-border:rgba(234,88,12,.25);--green:#1e9e62;--green-bg:#e8f7f0;--green-border:rgba(30,158,98,.25);--red:#dc2626;--red-bg:#fff1f1;--red-border:rgba(220,38,38,.25);--purple:#7c3aed;--purple-bg:#f5f3ff;--purple-border:rgba(124,58,237,.2);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--purple-bg:#221a3a;--purple:#a78bfa;--bg:#121212;--surface:#1c1c1c;--surface2:#262626;--border:rgba(255,255,255,.09);--border2:rgba(255,255,255,.15);--text:#f2f2f2;--muted:#9a9a9a;--muted2:#c2c2c2;--blue-bg:#16213a;--green-bg:#10281e;--red-bg:#2e1616}}
+body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min-height:100vh}
+.hero{background:var(--surface);border-bottom:1px solid var(--border2);padding:40px 48px 36px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:10px}
+h1{font-size:clamp(24px,3.5vw,36px);font-weight:700;line-height:1.15}h1 span{color:var(--blue)}
+.meta{display:flex;gap:28px;flex-wrap:wrap;margin-top:20px}.meta div{display:flex;flex-direction:column;gap:2px}
+.lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.meta b{font-size:14px;font-weight:600}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.hb{border-radius:10px;padding:7px 16px;font-size:13px;font-weight:700;background:var(--red-bg);border:1.5px solid var(--red-border);color:var(--red)}
+.hb.info{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue)}.hb.warn{background:var(--orange-bg);border-color:var(--orange-border);color:var(--orange)}
+.fx{margin-top:22px;padding-top:18px;border-top:1px solid var(--border2)}.fx .lbl{margin-bottom:12px}
+.fxg{display:flex;gap:12px;flex-wrap:wrap}
+.fxi{background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--border2);border-radius:10px;padding:10px 16px;display:flex;flex-direction:column;gap:3px;min-width:130px}.fxi.ref{border-left-color:var(--blue)}
+.fxi b{font-size:16px}.fxi i{font-style:normal;font-size:10.5px;font-weight:600;color:var(--red)}
+.main{padding:36px 48px;max-width:1200px;margin:0 auto}
+.tabs{display:flex;gap:6px;margin-bottom:32px;flex-wrap:wrap}
+.tab{padding:9px 24px;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface);color:var(--muted);font:600 13px 'Poppins',sans-serif;cursor:pointer;transition:all .18s}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}.tab:hover:not(.active){border-color:var(--blue);color:var(--blue)}
+.section{display:none}.section.active{display:block;animation:fu .3s ease}@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:16px;margin-bottom:28px}
+.kpi{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c)}
+.kpi.blue{--c:var(--blue);--t:var(--blue)}.kpi.red{--c:var(--red);--t:var(--red)}.kpi.orange{--c:var(--orange);--t:var(--orange)}.kpi.purple{--c:var(--purple);--t:var(--purple)}
+.kpi b{display:block;font-size:22px;font-weight:700;line-height:1.1;color:var(--t)}.kpi small{display:block;font-size:11px;color:var(--muted);margin-top:6px}.kpi .lbl{margin-bottom:8px}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+.note{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:20px 22px;font-size:12.5px;line-height:1.6;color:var(--muted2);margin-bottom:0}
+.note.m{margin-bottom:28px}.note h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
+.note b{color:var(--text)}.note ul{padding-left:18px}.note li{margin-bottom:6px}
+.tw{background:var(--surface);border:1.5px solid var(--border2);border-radius:16px;overflow:hidden;margin-bottom:28px}
+.th,.tr{display:grid;grid-template-columns:var(--c);padding:13px 24px;gap:8px;align-items:center}
+.th{background:var(--surface2);border-bottom:1px solid var(--border2);font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;text-align:right}.th span:first-child{text-align:left}
+.tr{border-bottom:1px solid var(--border);transition:background .15s}.tr:last-child{border-bottom:none}.tr:hover{background:var(--surface2)}.tr.tot{background:var(--surface2);border-top:1.5px solid var(--border2);font-weight:700}
+.cat{font-size:13px;font-weight:600}.v{font-size:12px;font-weight:500;text-align:right;color:var(--muted2)}.v.hi{color:var(--text);font-weight:600}.why{font-size:11.5px;color:var(--muted2);line-height:1.5}
+.tr.p{cursor:pointer}.tr.p .cat::before{content:'▸ ';color:var(--muted);font-size:10px}.tr.p.open .cat::before{content:'▾ '}
+.tr.s{display:none;background:var(--surface2);padding:10px 24px 10px 40px}.tr.s.show{display:grid}.tr.s .cat{font-size:11.5px;font-weight:500;color:var(--muted2)}.tr.s .v{font-size:11px}
+.badge{display:block;width:max-content;margin:3px 0 0 auto;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:600}
+.badge.up{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}.badge.down{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+.cw{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:24px;grid-column:1/-1}
+.cw h3{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}.cw p{font-size:11.5px;color:var(--muted);margin-bottom:14px}
+.ucg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.uc{background:var(--surface);border:1.5px solid var(--border2);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.uc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c)}.uc b{display:block;font-size:24px;font-weight:700;color:var(--c)}.uc small{display:block;font-size:10.5px;color:var(--muted);margin-top:5px}.uc .lbl{margin-bottom:6px}
+.h2{font-size:13px;font-weight:700;margin:6px 0 12px}
+.tl{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:22px 24px;margin-bottom:28px}
+.tlr{display:grid;grid-template-columns:70px 1fr 190px;gap:14px;align-items:center;margin-bottom:14px}.tlr:last-of-type{margin-bottom:8px}
+.bar{display:flex;gap:3px;height:34px}.bar div{border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700}
+.p1{background:var(--blue)}.p2{background:var(--orange)}.p3{background:var(--red)}
+.tlr .v{text-align:left}.lg{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted2);margin-top:12px}.lg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+@media(max-width:700px){.main{padding:20px 16px}.hero{padding:28px 20px}.notes,.cg{grid-template-columns:1fr}.ucg{grid-template-columns:1fr 1fr}
+.th,.tr,.tr.s{padding-left:14px;padding-right:14px}.t1{--c:1.5fr 1fr 1fr 1.2fr!important}.t1>*:nth-child(3),.t1>*:nth-child(4){display:none}
+.t2{--c:1.2fr .8fr 2fr!important}.t2>*:nth-child(2),.t2>*:nth-child(3),.t2>*:nth-child(4){display:none}.tlr{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <div>
-    <div class="header-eyebrow">Processo de importação — fechamento</div>
-    <h1 class="header-title">Aprovado <em>×</em><br>Realizado</h1>
+<div class="hero">
+  <div class="eyebrow">K599 · FUJIMOTO 11 SC · CONSOLIDADO</div>
+  <h1>Estudo inicial <span>x</span> Lotes 1 + 2</h1>
+  <div class="meta">
+    <div><span class="lbl">Cliente</span><b>Fujimoto</b></div>
+    <div><span class="lbl">Produto</span><b>Arame Recozido Duplo Torcido</b></div>
+    <div><span class="lbl">Especificação</span><b>BWG 18 - 108.000 kg (4 CNTRs)</b></div>
   </div>
-  <div class="header-badge">
-    <div class="header-badge-label">Variação total</div>
-    <div class="header-badge-val">+11,94%</div>
+  <div class="badges">
+    <div class="hb">+8,82% acima do estudo inicial</div>
+    <div class="hb info">Lote 1 · 81 t · 3 cntrs</div>
+    <div class="hb info">Lote 2 · 27 t · 1 cntr</div>
+    <div class="hb warn">Lote 2 em prévia</div>
+  </div>
+  <div class="fx"><div class="lbl">Taxas de câmbio utilizadas</div><div class="fxg">
+    <div class="fxi ref"><span class="lbl">Estudo inicial</span><b>R$ 5,1500</b></div>
+    <div class="fxi"><span class="lbl">20% entrada (L1 e L2)</span><b>R$ 5,3050</b><i>+3,01% vs ref.</i></div>
+    <div class="fxi"><span class="lbl">80% / registro · Lote 1</span><b>R$ 5,1604</b><i>+0,20% vs ref.</i></div>
+    <div class="fxi"><span class="lbl">80% / registro · Lote 2</span><b>R$ 5,2132</b><i>+1,23% vs ref.</i></div>
+  </div></div>
+</div>
+<div class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('geral',event)">Visão consolidada</button>
+    <button class="tab" onclick="showTab('lotes',event)">Lote 1 x Lote 2</button>
+    <button class="tab" onclick="showTab('entre',event)">Entreposto</button>
+  </div>
+
+  <div id="tab-geral" class="section active">
+    <div class="notes">
+      <div class="note"><h3>Escopo</h3>O estudo inicial previa <b>4 containers (108 t)</b> em um só processo. Após o entreposto, a carga foi dividida em <b>lote 1 (3 cntrs · 81 t)</b> e <b>lote 2 (1 cntr · 27 t)</b>, cada um com seu registro.<br><br>Comparação sobre o <b>custo total antes dos créditos tributários</b> (mesma base dos relatórios dos lotes). No estudo inicial, o custo final líquido era R$ 529.145,53 (R$ 4,90/kg).</div>
+      <div class="note"><h3>NCM ajustada</h3>A NCM passou de <b>7217.10.90</b> para <b>7217.10.19</b>: II de <b>25% para 12%</b>, demais alíquotas mantidas (IPI 3,25% · PIS 2,10% · COFINS 9,65%).<br><br>Economia estimada só no II: <b>≈ R$ 48,5 mil</b> (R$ 36,3 mil no lote 1 + R$ 12,2 mil no lote 2). É o que segura o desvio total abaixo dos R$ 78 mil de desembaraço.</div>
+    </div>
+    <div class="kpis">
+      <div class="kpi blue"><span class="lbl">Estudo inicial</span><b>R$ 598.070</b><small>R$ 5,54/kg · 108 t</small></div>
+      <div class="kpi red"><span class="lbl">Fechamento lotes 1 + 2</span><b>R$ 650.811</b><small>R$ 6,03/kg · lote 2 em prévia</small></div>
+      <div class="kpi red"><span class="lbl">Diferença</span><b>+R$ 52.741</b><small>+8,82% · +R$ 0,49/kg</small></div>
+      <div class="kpi purple"><span class="lbl">Principal desvio</span><b>+R$ 78.464</b><small>Desembaraço (armazenagem + Braskarne)</small></div>
+    </div>
+    <div class="note m"><h3>Principais movimentos (soma dos lotes x estudo inicial)</h3><ul>
+      <li><b>Desembaraço +R$ 78,5 mil (+454,5%)</b>: armazenagem de R$ 57,7 mil (o estudo previa só o 1º período, R$ 11,3 mil) e Pacote Braskarne de R$ 29,0 mil, não previsto.</li>
+      <li><b>Impostos −R$ 40,9 mil (−28,5%)</b>: efeito da NCM ajustada (II 25% → 12%), mesmo com câmbio maior.</li>
+      <li><b>Frete internacional +R$ 21,0 mil (+97,9%)</b>: de US$ 1.000 para US$ 2.000 por container.</li>
+      <li><b>Frete terrestre −R$ 11,2 mil (−17,1%)</b>: R$ 54.220 realizados contra 4 × R$ 16.350 do estudo.</li>
+      <li><b>Dividir em 2 lotes +R$ 2,6 mil</b>: custos fixos por registro (taxas marítimas, despachante, Siscomex) passam a ser cobrados duas vezes. Veja a ponte abaixo.</li></ul></div>
+    <div class="tw" id="mainT" style="--c:1.9fr repeat(5,1fr)"><div class="th t1"><span>Categoria (clique para detalhar)</span><span>Estudo inicial</span><span>Lote 1</span><span>Lote 2</span><span>Soma dos lotes</span><span>Diferença</span></div></div>
+    <div class="cg">
+      <div class="cw"><h3>Ponte: do estudo inicial ao fechamento</h3><p>Variações por categoria medidas contra o estudo já dividido em 2 lotes. Eixo começa em R$ 450 mil.</p><div style="position:relative;height:340px"><canvas id="wf"></canvas></div></div>
+    </div>
+  </div>
+
+  <div id="tab-lotes" class="section">
+    <div class="ucg">
+      <div class="uc" style="--c:var(--blue)"><span class="lbl">Estudo inicial</span><b>R$ 5,54</b><small>por kg · 108 t</small></div>
+      <div class="uc" style="--c:var(--orange)"><span class="lbl">Lote 1 · fechamento</span><b>R$ 5,96</b><small>por kg · 81 t · R$ 482.693</small></div>
+      <div class="uc" style="--c:var(--orange)"><span class="lbl">Lote 2 · prévia</span><b>R$ 6,23</b><small>por kg · 27 t · R$ 168.118</small></div>
+      <div class="uc" style="--c:var(--red)"><span class="lbl">Lote 2 − Lote 1</span><b>+R$ 0,27</b><small>+4,5% por kg</small></div>
+    </div>
+    <div class="notes">
+      <div class="note"><h3>Resumo: por que o lote 2 custa mais por kg</h3><ul>
+        <li><b>Armazenagem +R$ 0,27/kg</b>: o lote 2 ficou 106 dias em entreposto (prévia até 05/10) contra 81 do lote 1. Os 25 dias a mais caíram no 3º período, o mais caro (0,30% do CIF por dia).</li>
+        <li><b>Custos fixos por lote +R$ 0,06/kg</b>: despachante e taxas (R$ 2.625) pesam sobre 27 t, não sobre 81 t.</li>
+        <li><b>Câmbio e impostos +R$ 0,04/kg</b>: registro a R$ 5,2132 contra R$ 5,1604, e Siscomex fixo por registro.</li>
+        <li><b>Frete terrestre −R$ 0,11/kg</b>: compensa parte da diferença.</li></ul></div>
+      <div class="note"><h3>Já havia diferença no estudo</h3>Os estudos por lote já mostravam <b>R$ 5,53/kg (lote 1)</b> e <b>R$ 5,65/kg (lote 2)</b>: +R$ 0,12/kg só por custos fixos por registro (taxas marítimas, despachante, Siscomex) divididos por menos quilos.<br><br>Frete internacional, seguro, taxas marítimas, AFRMM, Braskarne e lavagem são rateados por kg no fechamento, então não explicam nada.</div>
+    </div>
+    <div class="cg"><div class="cw"><h3>Ponte unitária: Lote 1 → Lote 2 (R$/kg)</h3><p>Fechamento. Eixo começa em R$ 5,80.</p><div style="position:relative;height:320px"><canvas id="wu"></canvas></div></div></div>
+    <div class="tw" id="unitT" style="--c:1.4fr .8fr .8fr .8fr .8fr 2.6fr"><div class="th t2"><span>R$/kg por categoria</span><span>Estudo inicial</span><span>Lote 1</span><span>Lote 2</span><span>L2 − L1</span><span style="text-align:left">Por quê</span></div></div>
+  </div>
+
+  <div id="tab-entre" class="section">
+    <div class="kpis">
+      <div class="kpi orange"><span class="lbl">Armazenagem (L1 + L2)</span><b>R$ 57.680</b><small>estudo previa R$ 11.257 (só 1º período)</small></div>
+      <div class="kpi purple"><span class="lbl">Pacote Braskarne</span><b>R$ 29.022</b><small>75% lote 1 · 25% lote 2 · não previsto</small></div>
+      <div class="kpi red"><span class="lbl">Total geral entreposto</span><b>R$ 86.702</b><small>armazenagem + pacote</small></div>
+      <div class="kpi blue"><span class="lbl">Dias em entreposto</span><b>81 · 106</b><small>lote 1 · lote 2 (prévia)</small></div>
+    </div>
+    <div class="h2">Tempo em entreposto <span style="font-weight:400;color:var(--muted);font-size:11.5px">desde 22/06/2026</span></div>
+    <div class="tl">
+      <div class="tlr"><b>Lote 1</b><div class="bar"><div class="p1" style="flex:15">15</div><div class="p2" style="flex:44">44</div><div class="p3" style="flex:22">22</div></div><span class="v">81 dias · até 10/09 · R$ 37.806,70</span></div>
+      <div class="tlr"><b>Lote 2</b><div class="bar"><div class="p1" style="flex:15">15</div><div class="p2" style="flex:44">44</div><div class="p3" style="flex:47">47</div></div><span class="v">106 dias · prévia até 05/10 · R$ 19.873,69</span></div>
+      <div class="lg"><span><i class="p1"></i>1º período · 0,35% (15 dias)</span><span><i class="p2"></i>2º período · 0,15%/dia</span><span><i class="p3"></i>3º período · 0,30%/dia</span></div>
+    </div>
+    <div class="tw" style="--c:1.6fr 1fr 1fr 1fr"><div class="th"><span>Período</span><span>Alíquota</span><span>Lote 1</span><span>Lote 2</span></div>
+      <div class="tr"><span class="cat">1º · 22/06 a 06/07</span><span class="v">0,35% (único)</span><span class="v">15 d · R$ 976,56</span><span class="v">15 d · R$ 330,44</span></div>
+      <div class="tr"><span class="cat">2º · 07/07 a 19/08</span><span class="v">0,15%/dia</span><span class="v">44 d · R$ 18.415,07</span><span class="v">44 d · R$ 6.231,18</span></div>
+      <div class="tr"><span class="cat">3º · a partir de 20/08</span><span class="v">0,30%/dia</span><span class="v hi">22 d · R$ 18.415,07</span><span class="v hi">47 d · R$ 13.312,07</span></div>
+      <div class="tr tot"><span class="cat">Total armazenagem</span><span class="v"></span><span class="v hi">R$ 37.806,70</span><span class="v hi">R$ 19.873,69</span></div></div>
+    <div class="note m">CIF de base: <b>R$ 279.016,28</b> (lote 1) e <b>R$ 94.411,86</b> (lote 2). Enquanto o lote 2 não for retirado, cada dia extra no 3º período soma <b>R$ 283,24</b> (≈ R$ 0,0105/kg). O estudo inicial considerava apenas o 1º período; o 2º e o 3º não estavam previstos.</div>
   </div>
 </div>
-
-<div class="kpis">
-  <div class="kpi blue" style="animation-delay:0s">
-    <div class="kpi-label">Total aprovado</div>
-    <div class="kpi-val">R$ 274.973</div>
-    <div class="kpi-sub">Orçamento inicial</div>
-  </div>
-  <div class="kpi orange" style="animation-delay:0.07s">
-    <div class="kpi-label">Total realizado</div>
-    <div class="kpi-val">R$ 307.795</div>
-    <div class="kpi-sub">Custo efetivo</div>
-  </div>
-  <div class="kpi red" style="animation-delay:0.14s">
-    <div class="kpi-label">Diferença</div>
-    <div class="kpi-val">+R$ 32.822</div>
-    <div class="kpi-sub">Acima do orçado</div>
-  </div>
-  <div class="kpi green" style="animation-delay:0.21s">
-    <div class="kpi-label">Total líquido</div>
-    <div class="kpi-val">R$ 258.660</div>
-    <div class="kpi-sub">Após crédito tributário</div>
-  </div>
-</div>
-
-<div class="tabs">
-  <button class="tab active" onclick="showTab('geral')">Visão geral</button>
-  <button class="tab" onclick="showTab('unit')">Custo unitário</button>
-</div>
-
-<!-- TAB GERAL -->
-<div id="tab-geral" class="section active">
-  <div class="table-wrap">
-    <div class="table-head">
-      <span>Categoria</span>
-      <span style="text-align:right">Aprovado</span>
-      <span style="text-align:right">Realizado</span>
-      <span style="text-align:right">Diferença</span>
-      <span style="text-align:right">Variação</span>
-    </div>
-    <!-- rows injected by JS -->
-  </div>
-
-  <div class="charts-grid">
-    <div class="chart-card full">
-      <div class="chart-title">Comparativo por categoria</div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:var(--approve)"></span>Aprovado</span>
-        <span class="legend-item"><span class="legend-dot" style="background:var(--real)"></span>Realizado</span>
-      </div>
-      <div style="position:relative;height:300px">
-        <canvas id="barChart" role="img" aria-label="Gráfico de barras comparando aprovado e realizado por categoria"></canvas>
-      </div>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-title">Variação % por categoria</div>
-      <div style="position:relative;height:280px">
-        <canvas id="varChart" role="img" aria-label="Variação percentual por categoria"></canvas>
-      </div>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-title">Composição do realizado</div>
-      <div style="position:relative;height:280px">
-        <canvas id="pieChart" role="img" aria-label="Composição do custo realizado por categoria"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- TAB UNIT -->
-<div id="tab-unit" class="section">
-  <div class="unit-grid">
-    <div class="unit-card blue">
-      <div class="unit-card-label">Custo unitário aprovado</div>
-      <div class="unit-card-val">R$ 11.955,37</div>
-      <div class="unit-card-sub">Valor orçado por unidade</div>
-    </div>
-    <div class="unit-card orange">
-      <div class="unit-card-label">Custo unitário realizado</div>
-      <div class="unit-card-val">R$ 13.382,40</div>
-      <div class="unit-card-sub">Custo efetivo por unidade</div>
-    </div>
-  </div>
-  <div class="unit-diff" style="margin-bottom:32px">
-    <div>
-      <div class="unit-diff-label">Diferença unitária</div>
-      <div style="font-size:13px;color:var(--muted2);margin-top:6px;font-family:'DM Mono',monospace">R$ 13.382,40 − R$ 11.955,37</div>
-    </div>
-    <div style="text-align:right">
-      <div class="unit-diff-val">+11,94%</div>
-      <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--red)">+ R$ 1.427,03 / un.</div>
-    </div>
-  </div>
-
-  <div class="chart-card" style="margin-bottom:32px">
-    <div class="chart-title">Custo unitário: aprovado × realizado</div>
-    <div class="legend">
-      <span class="legend-item"><span class="legend-dot" style="background:var(--approve)"></span>Aprovado R$ 11.955</span>
-      <span class="legend-item"><span class="legend-dot" style="background:var(--real)"></span>Realizado R$ 13.382</span>
-    </div>
-    <div style="position:relative;height:180px">
-      <canvas id="unitChart" role="img" aria-label="Comparativo custo unitário aprovado vs realizado"></canvas>
-    </div>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title">Contribuição de cada categoria ao custo unitário realizado</div>
-    <div style="position:relative;height:280px">
-      <canvas id="unitPieChart" role="img" aria-label="Composição do custo unitário realizado"></canvas>
-    </div>
-  </div>
-</div>
-
 <script>
-const cats = ['Produto','Impostos','Frete marítimo','Desp. desembaraço','Seguro','Frete rodoviário'];
-const apr = [168367.36, 68023.12, 14823.80, 11145.51, 1213.69, 11400.00];
-const rea = [188645.21, 74128.61, 11354.03, 8522.27, 760.21, 24384.85];
-const vars = [12.04, 8.98, -23.41, -23.54, -37.36, 113.90];
-
-const fmtBRL = v => 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtK = v => 'R$ ' + (v/1000).toFixed(1) + 'k';
-
-// Build table rows
-const tableWrap = document.querySelector('.table-wrap');
-cats.forEach((c, i) => {
-  const diff = rea[i] - apr[i];
-  const isUp = vars[i] >= 0;
-  const pct = Math.abs(rea[i]/apr[i]*100).toFixed(0);
-  const row = document.createElement('div');
-  row.className = 'table-row';
-  row.innerHTML = `
-    <span class="cat">${c}</span>
-    <span class="val">${fmtBRL(apr[i])}</span>
-    <span class="val real">${fmtBRL(rea[i])}</span>
-    <span class="val" style="color:${isUp?'var(--red)':'var(--green)'}">${isUp?'+':''}${fmtBRL(diff)}</span>
-    <span style="text-align:right"><span class="badge ${isUp?'up':'down'}">${isUp?'▲':'▼'} ${Math.abs(vars[i]).toFixed(2)}%</span></span>
-    <div class="bar-wrap" style="grid-column:1/-1">
-      <div class="bar-fill" style="width:0%;background:${isUp?'var(--red)':'var(--green)'}" data-pct="${pct}"></div>
-    </div>
-  `;
-  tableWrap.appendChild(row);
-});
-
-// Animate bars
-setTimeout(() => {
-  document.querySelectorAll('.bar-fill').forEach(b => {
-    b.style.width = Math.min(parseInt(b.dataset.pct), 100) + '%';
-  });
-}, 300);
-
-const gridColor = 'rgba(255,255,255,0.06)';
-const textColor = '#7a7880';
-const fontMono = "'DM Mono', monospace";
-
-// BAR CHART
-new Chart(document.getElementById('barChart'), {
-  type: 'bar',
-  data: {
-    labels: cats,
-    datasets: [
-      { label: 'Aprovado', data: apr, backgroundColor: 'rgba(78,156,245,0.7)', borderRadius: 6, borderSkipped: false },
-      { label: 'Realizado', data: rea, backgroundColor: 'rgba(240,160,75,0.7)', borderRadius: 6, borderSkipped: false }
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + fmtBRL(ctx.parsed.y) } } },
-    scales: {
-      x: { ticks: { color: textColor, font: { family: fontMono, size: 11 }, autoSkip: false, maxRotation: 25 }, grid: { color: gridColor } },
-      y: { ticks: { color: textColor, font: { family: fontMono, size: 11 }, callback: fmtK }, grid: { color: gridColor } }
-    }
-  }
-});
-
-// VAR CHART
-new Chart(document.getElementById('varChart'), {
-  type: 'bar',
-  data: {
-    labels: cats,
-    datasets: [{ label: 'Variação %', data: vars, backgroundColor: vars.map(v => v >= 0 ? 'rgba(242,98,98,0.7)' : 'rgba(86,209,140,0.7)'), borderRadius: 6 }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed.y.toFixed(2) + '%' } } },
-    scales: {
-      x: { ticks: { color: textColor, font: { family: fontMono, size: 10 }, autoSkip: false, maxRotation: 30 }, grid: { color: gridColor } },
-      y: { ticks: { color: textColor, font: { family: fontMono, size: 11 }, callback: v => v + '%' }, grid: { color: gridColor } }
-    }
-  }
-});
-
-// PIE CHART
-const pieColors = ['#4e9cf5','#f0a04b','#56d18c','#c9b8ff','#f26262','#f5c842'];
-new Chart(document.getElementById('pieChart'), {
-  type: 'doughnut',
-  data: {
-    labels: cats,
-    datasets: [{ data: rea, backgroundColor: pieColors, borderColor: '#16161a', borderWidth: 3, hoverOffset: 8 }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'bottom', labels: { color: textColor, font: { family: fontMono, size: 11 }, padding: 12, boxWidth: 10 } },
-      tooltip: { callbacks: { label: ctx => ' ' + fmtBRL(ctx.parsed) + ' (' + (ctx.parsed/307795.18*100).toFixed(1) + '%)' } }
-    }
-  }
-});
-
-// UNIT BAR
-new Chart(document.getElementById('unitChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Custo unitário'],
-    datasets: [
-      { label: 'Aprovado', data: [11955.37], backgroundColor: 'rgba(78,156,245,0.7)', borderRadius: 8 },
-      { label: 'Realizado', data: [13382.40], backgroundColor: 'rgba(240,160,75,0.7)', borderRadius: 8 }
-    ]
-  },
-  options: {
-    indexAxis: 'y',
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + fmtBRL(ctx.parsed.x) } } },
-    scales: {
-      x: { ticks: { color: textColor, font: { family: fontMono, size: 11 }, callback: fmtK }, grid: { color: gridColor }, min: 10000 },
-      y: { ticks: { color: textColor, font: { family: fontMono, size: 11 } }, grid: { color: gridColor } }
-    }
-  }
-});
-
-// UNIT PIE
-new Chart(document.getElementById('unitPieChart'), {
-  type: 'doughnut',
-  data: {
-    labels: cats,
-    datasets: [{ data: rea, backgroundColor: pieColors, borderColor: '#16161a', borderWidth: 3, hoverOffset: 8 }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'bottom', labels: { color: textColor, font: { family: fontMono, size: 11 }, padding: 12, boxWidth: 10 } },
-      tooltip: { callbacks: { label: ctx => ' ' + fmtBRL(ctx.parsed / 307795.18 * 13382.40) + '/un' } }
-    }
-  }
-});
-
-function showTab(tab) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  event.target.classList.add('active');
-}
+const N=['Produto (FOB)','Frete internacional','Seguro','Impostos de importação','ICMS','Taxas de frete marítimo','Desembaraço aduaneiro','Frete terrestre'];
+const I=[328158,21424,2189.53,143410.59,13443.95,6778.40,17265.27,65400];
+const E1=[246118.50,16068,1642.15,107611.57,10084.55,5578.40,11987.95,49050],E2=[82039.50,5356,547.38,36013.53,3365.75,3178.40,5691.48,16350];
+const F1=[247997.60,31791,1428.32,76576.79,9630.64,7417.39,65031.08,42820],F2=[83338.75,10597,476.11,25889.06,3245.83,2472.46,30698.49,11400];
+const SUB={3:[['Imposto de Importação (I.I.)',87715.83,33481.95,11274.84],['IPI',14253.82,10156.19,3420.04],['PIS',7368.13,5859.34,1973.10],['COFINS',33858.31,26925.07,9066.85],['Taxa Siscomex',214.50,154.23,154.23]],
+6:[['AFRMM - Marinha Mercante',2117.92,2720.57,906.86],['Armazenagem em entreposto',11257.35,37806.70,19873.69],['Pacote Braskarne',0,21766.31,7255.44],['Despachante e taxas',2890,2625,2625],['Lavagem de CTNR',1000,112.50,37.50]]};
+const K1=81000,K2=27000,K0=108000,sum=a=>a.reduce((x,y)=>x+y,0);
+const fmt=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}),f4=v=>(v>=0?'+':'−')+'R$ '+Math.abs(v).toFixed(4).replace('.',',');
+const tc='#999',ff="'Poppins',sans-serif",gc='rgba(128,128,128,.15)';
+function add(el,cls,html,fn){const d=document.createElement('div');d.className=cls;d.innerHTML=html;if(fn)d.onclick=fn;el.appendChild(d);return d}
+function row(c,a,l1,l2){const s=l1+l2,d=s-a;const b=a===0?'<span class="badge up">novo</span>':`<span class="badge ${d>0?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d/a*100).toFixed(1)}%</span>`;
+return `<span class="cat">${c}</span><span class="v">${fmt(a)}</span><span class="v">${fmt(l1)}</span><span class="v">${fmt(l2)}</span><span class="v hi">${fmt(s)}</span><span class="v" style="color:var(${d>0?'--red':'--green'})">${d>0?'+':''}${fmt(d)}${b}</span>`}
+const T=document.getElementById('mainT');
+N.forEach((n,i)=>{const sb=SUB[i],subs=[];add(T,'tr t1'+(sb?' p':''),row(n,I[i],F1[i],F2[i]),sb?function(){this.classList.toggle('open');subs.forEach(s=>s.classList.toggle('show'))}:null);
+if(sb)sb.forEach(x=>subs.push(add(T,'tr s t1',row(x[0],x[1],x[2],x[3]))))});
+add(T,'tr t1 tot',row('TOTAL',sum(I),sum(F1),sum(F2)));
+// ponte consolidada
+const S=F1.map((v,i)=>v+F2[i]),split=sum(E1)+sum(E2)-sum(I),dl=S.map((v,i)=>v-E1[i]-E2[i]);
+const short=['FOB (câmbio)','Frete intl.','Seguro','Impostos (NCM)','ICMS','Taxas marít.','Desembaraço','Frete terrestre'];
+function wf(id,start,steps,end,lbl,ymin,fm,k){let run=start;const d=[[0,start]],c=['rgba(37,99,235,.8)'];
+steps.forEach(s=>{d.push([Math.min(run,run+s),Math.max(run,run+s)]);c.push(s>=0?'rgba(220,38,38,.75)':'rgba(30,158,98,.75)');run+=s});
+d.push([0,end]);c.push('rgba(234,88,12,.8)');
+new Chart(id,{type:'bar',data:{labels:lbl,datasets:[{data:d,backgroundColor:c,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>{const[a,b]=x.raw;return ' '+(x.dataIndex==0||x.dataIndex==d.length-1?fm(b):(c[x.dataIndex].includes('220')?'+':'−')+fm(b-a))}}}},scales:{x:{ticks:{color:tc,font:{family:ff,size:10},maxRotation:35},grid:{display:false}},y:{min:ymin,ticks:{color:tc,font:{family:ff,size:11},callback:k},grid:{color:gc}}}}})}
+wf('wf',sum(I),[split,...dl],sum(F1)+sum(F2),['Estudo inicial','Dividir em 2 lotes',...short,'Fechamento L1 + L2'],450000,fmt,v=>'R$ '+(v/1000).toFixed(0)+'k');
+// unitário
+const u1=F1.map(v=>v/K1),u2=F2.map(v=>v/K2),u0=I.map(v=>v/K0);
+const arm1=37806.70/K1,arm2=19873.69/K2,gap=sum(F2)/K2-sum(F1)/K1;
+const st=[['FOB (câmbio)',u2[0]-u1[0]],['Impostos',u2[3]-u1[3]],['ICMS',u2[4]-u1[4]],['Armazenagem',arm2-arm1],['Despachante e taxas fixas',2625/K2-2625/K1],['Frete terrestre',u2[7]-u1[7]]];
+st.push(['Rateados por kg',gap-sum(st.map(s=>s[1]))]);
+wf('wu',sum(F1)/K1,st.map(s=>s[1]),sum(F2)/K2,['Lote 1',...st.map(s=>s[0]),'Lote 2'],5.8,v=>'R$ '+v.toFixed(4)+'/kg',v=>'R$ '+v.toFixed(2));
+const why=['Mesmo US$ 0,59/kg; câmbio de registro R$ 5,2132 (L2) contra R$ 5,1604 (L1).','Mesmo valor por kg (US$ 2.000/cntr nos dois).','Rateado por kg.','Câmbio de registro 1,0% maior e Siscomex fixo (R$ 154,23 por registro) diluído em menos kg.','Acompanha a base de impostos.','Rateadas por kg: sem diferença.','Armazenagem: 47 dias no 3º período (L2) contra 22 (L1) = +R$ 0,27/kg. Despachante e taxas fixos (R$ 2.625 por lote) = +R$ 0,06/kg.','L1: BH 54 t (R$ 28.800) + Nova Serrana 27 t (R$ 14.020). L2: R$ 11.400 em 27 t (R$ 422/t).'];
+const U=document.getElementById('unitT');
+const ur=(c,a,b,d,e,w,t)=>add(U,'tr t2'+(t?' tot':''),`<span class="cat">${c}</span><span class="v">R$ ${a.toFixed(4)}</span><span class="v">R$ ${b.toFixed(4)}</span><span class="v">R$ ${d.toFixed(4)}</span><span class="v hi" style="color:var(${e>0.00005?'--red':e<-0.00005?'--green':'--muted2'})">${f4(e)}</span><span class="why">${w}</span>`);
+N.forEach((n,i)=>ur(n,u0[i],u1[i],u2[i],u2[i]-u1[i],why[i]));
+ur('TOTAL',sum(u0),sum(u1),sum(u2),gap,'Estudo dos lotes: R$ 5,5326 (L1) e R$ 5,6497 (L2).',1);
+function showTab(t,e){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');e.target.classList.add('active')}
 </script>
 </body>
 </html>
